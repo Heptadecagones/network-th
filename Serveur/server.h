@@ -20,20 +20,6 @@ typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
-
-// Type definitions
-typedef struct
-{
-    int id;
-    char name[20];
-    char mode;
-} User;
-
-typedef struct
-{
-    User author;
-    char* contents; // /!\ Malloc
-} Message;
 #else
 
 #error not defined for this platform
@@ -49,6 +35,7 @@ typedef struct
 
 #include "client.h"
 
+
 static void init(int reset);
 static void end(void);
 static void app(void);
@@ -60,6 +47,5 @@ static char* send_message_to_all_clients(Client *clients, Client client, int act
 static void remove_client(Client *clients, int to_remove, int *actual);
 static void clear_clients(Client *clients, int actual);
 
-static void send_history(SOCKET sock, const char *history);
 
 #endif /* guard */

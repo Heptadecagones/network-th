@@ -7,10 +7,12 @@
 #include "client.h"
 #include "dbutil.h"
 
-#define RESET_DB 0
+// If 1, reset DB at startup
+#define RESET_DB 1
 
 // Needed function pointers before init
 static void end(void);
+static void clear_clients(Client *clients, int actual);
 
 int next_user_id () {
     static int last = 0;
@@ -42,7 +44,7 @@ static void init(int reset)
 
 static void end(void)
 {
-    printf("Goodbye.\n");
+    printf("Closing server...\n");
 #ifdef WIN32
     WSACleanup();
 #endif
@@ -61,8 +63,6 @@ static void app(void)
     Client clients[MAX_CLIENTS];
 
     fd_set rdfs;
-
-    char history[BUF_SIZE*HISTORY_SIZE];   // On considère pour l'instant qu'on peut garder HISTORY_SIZE messages
 
     while(1)
     {
@@ -112,17 +112,28 @@ static void app(void)
                 continue;
             }
 
+            //TODO Sanitize name (remove spaces, illegal characters...)
+            printf("[LOG] %s connected.\n", buffer);
+
             /* what is the new maximum fd ? */
             max = csock > max ? csock : max;
 
             FD_SET(csock, &rdfs);
 
-            Client c = { csock };
+            Client c = { csock, "", 'g'};
             strncpy(c.name, buffer, BUF_SIZE - 1);
             clients[actual] = c;
             actual++;
 
-            send_history(csock, history);
+            // Send history to client
+            int i, n_history_lines = 0;
+            char **history = get_history_db(c.sock, c.name, &n_history_lines);
+            printf("n_lines is %d\n", n_history_lines);
+            for(i = 0; i < n_history_lines; i++)
+            {
+                write_client(c.sock, history[i]);
+            }
+
         }
         else
         {
@@ -142,18 +153,16 @@ static void app(void)
                         remove_client(clients, i, &actual);
                         strncpy(buffer, client.name, BUF_SIZE - 1);
                         strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
-                        printf("before send message (client disconnected)\r\n");
                         message_send = send_message_to_all_clients(clients, client, actual, buffer, 1);
                     }
                     else
                     {
-                        printf("before send message\r\n");
                         message_send = send_message_to_all_clients(clients, client, actual, buffer, 0);
                     }
-                    // Gestion de l'historique
-                    printf("before add to history: message_send is : %s\r\n", message_send);
-                    strncat(history, message_send, (BUF_SIZE*HISTORY_SIZE) - strlen(message_send) - 1);
-                    free(message_send);     // Car on a alloué avec malloc message_send dans send_message_to_all_clients
+
+                    // Car on a alloué avec malloc message_send dans 
+                    // send_message_to_all_clients
+                    free(message_send);     
                     break;
                 }
             }
@@ -265,13 +274,6 @@ static void write_client(SOCKET sock, const char *buffer)
         perror("send()");
         exit(errno);
     }
-}
-
-/* Envoi l'ensemble des messages envoyés depuis le début */
-static void send_history(SOCKET sock, const char *history)
-{
-    /* On considère actuellement que l'envoi de l'historique est l'équivalent de l'envoi d'un message, la méthode peut être appelée à changer, d'où une méthode spécifique  */
-    write_client(sock, history);
 }
 
 int main(int argc, char **argv)

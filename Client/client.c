@@ -107,6 +107,7 @@ static int init_connection(const char *address)
 
     sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr;
     sin.sin_port = htons(PORT);
+    printf("Port is %d\n", PORT);
     sin.sin_family = AF_INET;
 
     if(connect(sock,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR)
