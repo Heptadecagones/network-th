@@ -1,9 +1,8 @@
-// Execute arbitary SQL
-int query_db(char*);
+#include <sqlite3.h>
 
-// Open DB connection
-int init_db();
+sqlite3_stmt* query_db(char*);
+sqlite3_stmt* auth_user(char* password);
 
-// Close DB connection
-int close_db();
-
+int init_db(void);
+int close_db(void);
+int reset_db(void);

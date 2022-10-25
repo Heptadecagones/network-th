@@ -21,6 +21,19 @@ typedef struct sockaddr_in SOCKADDR_IN;
 typedef struct sockaddr SOCKADDR;
 typedef struct in_addr IN_ADDR;
 
+// Type definitions
+typedef struct
+{
+    int id;
+    char name[20];
+    char mode;
+} User;
+
+typedef struct
+{
+    User author;
+    char* contents; // /!\ Malloc
+} Message;
 #else
 
 #error not defined for this platform
@@ -36,7 +49,7 @@ typedef struct in_addr IN_ADDR;
 
 #include "client.h"
 
-static void init(void);
+static void init(int reset);
 static void end(void);
 static void app(void);
 static int init_connection(void);

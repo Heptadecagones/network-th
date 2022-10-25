@@ -5,6 +5,8 @@ all: client server
 .SUFFIXES:
 	MAKEFLAGS += -r
 
+.PHONY: client server
+
 client:
 	@$(MAKE) -C Client
 

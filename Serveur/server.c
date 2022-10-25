@@ -7,9 +7,17 @@
 #include "client.h"
 #include "dbutil.h"
 
+#define RESET_DB 0
+
+// Needed function pointers before init
 static void end(void);
 
-static void init(void)
+int next_user_id () {
+    static int last = 0;
+    return ++last;
+}
+
+static void init(int reset)
 {
 #ifdef WIN32
     WSADATA wsa;
@@ -22,6 +30,14 @@ static void init(void)
 #endif
     // Call end if the server is terminated somehow (doesn't work for CTRL+\)
     atexit(end);
+    // Initialize database
+    printf("[DB INIT] "); 
+    init_db();
+    if(reset)
+    {
+        printf("[DB RESET] "); 
+        reset_db();
+    }
 }
 
 static void end(void)
@@ -260,7 +276,7 @@ static void send_history(SOCKET sock, const char *history)
 
 int main(int argc, char **argv)
 {
-    init();
+    init(RESET_DB);
     app();
 
     end();
