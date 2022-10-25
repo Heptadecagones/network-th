@@ -5,6 +5,7 @@
 
 #include "server.h"
 #include "client.h"
+
 #include "dbutil.h"
 
 static void init(void)
@@ -18,6 +19,8 @@ static void init(void)
         exit(EXIT_FAILURE);
     }
 #endif
+    // Init database connection
+    init_db();
 }
 
 static void end(void)
