@@ -153,6 +153,7 @@ static void app(void)
                         remove_client(clients, i, &actual);
                         strncpy(buffer, client.name, BUF_SIZE - 1);
                         strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
+                        // On récupère une chaîne de caractères message_send mise en forme par send_message_to_all_clients et allouée dynamiquement dans cette méthode
                         message_send = send_message_to_all_clients(clients, client, actual, buffer, 1);
                     }
                     else
