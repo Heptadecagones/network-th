@@ -34,7 +34,7 @@ typedef struct in_addr IN_ADDR;
 #define BUF_SIZE    1024
 #define HISTORY_SIZE 2048
 
-#include "client2.h"
+#include "client.h"
 
 static void init(void);
 static void end(void);

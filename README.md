@@ -1,3 +1,3 @@
-#Etape actuelle du projet
+# Etape actuelle du projet
 
 Historique (5/10)
