@@ -8,7 +8,6 @@
  * On va faire un truc style objets métier puisque ça a l'air de bien marcher
  */
 
-
 static sqlite3 *db = NULL;
 
 // General purpose DB interface function

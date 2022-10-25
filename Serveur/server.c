@@ -28,6 +28,8 @@ static void end(void)
 #ifdef WIN32
     WSACleanup();
 #endif
+    // Close database connection
+    close_db();
 }
 
 static void app(void)
@@ -42,7 +44,8 @@ static void app(void)
 
     fd_set rdfs;
 
-    char history[BUF_SIZE*HISTORY_SIZE];   // On considère pour l'instant qu'on peut garder HISTORY_SIZE messages
+    // On considère pour l'instant qu'on peut garder HISTORY_SIZE messages
+    char history[BUF_SIZE*HISTORY_SIZE];   
 
     while(1)
     {
