@@ -1,10 +1,12 @@
-
 all: client server
 
-client:
+%: %.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+client.o:
 	gcc -c ./Client/client.c
 
-server:
+server.o:
 	gcc -c ./Serveur/server.c
 
 clean:
