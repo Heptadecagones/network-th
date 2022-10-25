@@ -5,8 +5,9 @@
 
 #include "server.h"
 #include "client.h"
-
 #include "dbutil.h"
+
+static void end(void);
 
 static void init(void)
 {
@@ -19,16 +20,17 @@ static void init(void)
         exit(EXIT_FAILURE);
     }
 #endif
-    // Init database connection
-    init_db();
+    // Call end if the server is terminated somehow (doesn't work for CTRL+\)
+    atexit(end);
 }
 
 static void end(void)
 {
+    printf("Goodbye.\n");
 #ifdef WIN32
     WSACleanup();
 #endif
-    // Close database connection
+    // Close db connection
     close_db();
 }
 
@@ -44,8 +46,7 @@ static void app(void)
 
     fd_set rdfs;
 
-    // On considère pour l'instant qu'on peut garder HISTORY_SIZE messages
-    char history[BUF_SIZE*HISTORY_SIZE];   
+    char history[BUF_SIZE*HISTORY_SIZE];   // On considère pour l'instant qu'on peut garder HISTORY_SIZE messages
 
     while(1)
     {
