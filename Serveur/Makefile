@@ -1,4 +1,6 @@
 CC=gcc
+CFLAGS= -Wall \
+	-Werror
 LDFLAGS=-lsqlite3
 cyan = /bin/echo -e "\x1b[36m\#\# $1\x1b[0m"
 
