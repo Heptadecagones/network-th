@@ -1,20 +1,15 @@
 CC=gcc
-CFLAGS= -Wall \
-	-Werror
-LDFLAGS=
 
 all: client server
 
-%: %.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+.SUFFIXES:
+	MAKEFLAGS += -r
 
-client.o:
-	gcc -c ./Client/client.c
+client:
+	@$(MAKE) -C Client
 
-server.o:
-	gcc -c ./Serveur/server.c
+server:
+	@$(MAKE) -C Serveur
 
 clean:
-	rm *.o
-	rm client
-	rm server
+	rm -r client server **/*.o
