@@ -23,7 +23,7 @@ static sqlite3 *db = NULL;
 // DB operation error checking method
 void check_error(int result_code) {
     if (result_code != SQLITE_OK) {
-        printf("%s\n", sqlite3_errmsg(db));
+        printf("[DB CHK] %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
     }
 }
@@ -51,8 +51,9 @@ sqlite3_stmt* auth_user(char* password) {
 // Send messages in the order they arrived
 char** get_history_db(int sock, char* client_name, int* n_lines)
 {
-    //TODO beurk
+    // Return pointer
     char **history = (char**)malloc(sizeof(char*) * HISTORY_SIZE);
+
     // Query result
     sqlite3_stmt *res;
     // Result code
@@ -87,8 +88,8 @@ char** get_history_db(int sock, char* client_name, int* n_lines)
             history[*n_lines] = (char*)malloc(sizeof(char) * (BUF_SIZE + 40));
             strcpy(history[*n_lines], message);
             *n_lines += 1;
-        }
-        check_error(rc);
+        } else { check_error(rc); }
+        
         rc = sqlite3_step(res);
     } 
 
@@ -100,11 +101,13 @@ char** get_history_db(int sock, char* client_name, int* n_lines)
 int reset_db() {
     char *err_msg = 0;
     char *sql = ""
+        // Users table
         "DROP TABLE IF EXISTS Users;" 
         "CREATE TABLE Users("
         "UserID INTEGER PRIMARY KEY AUTOINCREMENT,"
         "Username TEXT,"
         "Password TEXT);"
+        // Messages table
         "DROP TABLE IF EXISTS Messages;" 
         "CREATE TABLE Messages("
         "MessageID INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -114,6 +117,7 @@ int reset_db() {
         "Contents TEXT,"
         "FOREIGN KEY (Author) REFERENCES Users(UserID),"
         "FOREIGN KEY (Recipient) REFERENCES Users(UserID));"
+        // Dummy values
         "INSERT INTO Users (Username, Password)"
         "VALUES ('John', 'Doe'), ('Duke', 'Nukem');"
         "INSERT INTO Messages (Author, Recipient, Contents)"
