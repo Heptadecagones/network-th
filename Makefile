@@ -1,3 +1,8 @@
+CC=gcc
+CFLAGS= -Wall \
+	-Werror
+LDFLAGS=
+
 all: client server
 
 %: %.o
