@@ -14,11 +14,6 @@
 static void end(void);
 static void clear_clients(Client *clients, int actual);
 
-int next_user_id () {
-    static int last = 0;
-    return ++last;
-}
-
 static void init(int reset)
 {
 #ifdef WIN32

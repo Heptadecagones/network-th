@@ -43,7 +43,7 @@ sqlite3_stmt* query_db(char* sql) {
 }
 
 // Check password input against stored password
-sqlite3_stmt* auth_user(char* password) {
+sqlite3_stmt* auth_user(int user_id, char* password) {
     char* sql = "TODO";
     return query_db(sql);
 }
@@ -101,7 +101,7 @@ int get_user_id(char* client_name)
 }
 
 // Send messages in the order they arrived
-char** get_history_db(int sock, char* client_name, int* n_lines)
+char** get_history_db(char* client_name, int* n_lines)
 {
     // Return pointer
     char **history = (char**)malloc(sizeof(char*) * HISTORY_SIZE);
