@@ -117,6 +117,18 @@ int reset_db() {
         "Contents TEXT,"
         "FOREIGN KEY (Author) REFERENCES Users(UserID),"
         "FOREIGN KEY (Recipient) REFERENCES Users(UserID));"
+        // Rooms table
+        "DROP TABLE IF EXISTS Rooms;" 
+        "CREATE TABLE Rooms("
+        "RoomID INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "Name TEXT);"
+        // User_Rooms table
+        "DROP TABLE IF EXISTS User_rooms;" 
+        "CREATE TABLE User_rooms("
+        "User INT,"
+        "Room INT,"
+        "FOREIGN KEY (User) REFERENCES Users(UserID),"
+        "FOREIGN KEY (Room) REFERENCES Rooms(RoomID));"
         // Dummy values
         "INSERT INTO Users (Username, Password)"
         "VALUES ('John', 'Doe'), ('Duke', 'Nukem');"
