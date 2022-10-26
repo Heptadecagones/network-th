@@ -48,13 +48,64 @@ sqlite3_stmt* auth_user(char* password) {
     return query_db(sql);
 }
 
+
+int subscribe_user_to_room(int sock, char* client_name)
+{
+    // Pre-built statement
+    sqlite3_stmt *res;
+    // Result code
+    int rc;
+
+    // Prepare parametrized query
+    char* sql = ""
+            "INSERT INTO User_rooms (User, room) VALUES (:user, :room)";
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc); 
+
+    // Bind value to query
+    rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
+    check_error(rc);
+
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    sqlite3_finalize(res);
+    
+    // Return 0 if done, 1 otherwise
+    return rc == SQLITE_DONE ? 0 : 1;
+}
+
+int get_user_id(char* client_name)
+{
+    // Pre-built statement
+    sqlite3_stmt *res;
+    // Result code
+    int rc;
+
+    // Prepare parametrized query
+    char* sql = "SELECT UserID from Users WHERE Users.Username = :name;";
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc); 
+
+    // Bind value to query
+    rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
+    check_error(rc);
+
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    check_error(rc);
+    sqlite3_finalize(res);
+    
+    // Return 0 if done, 1 otherwise
+    return 1;
+}
+
 // Send messages in the order they arrived
 char** get_history_db(int sock, char* client_name, int* n_lines)
 {
     // Return pointer
     char **history = (char**)malloc(sizeof(char*) * HISTORY_SIZE);
 
-    // Query result
+    // Pre-built statement 
     sqlite3_stmt *res;
     // Result code
     int rc;
@@ -127,13 +178,16 @@ int reset_db() {
         "CREATE TABLE User_rooms("
         "User INT,"
         "Room INT,"
+        "UNIQUE(User, Room),"
         "FOREIGN KEY (User) REFERENCES Users(UserID),"
         "FOREIGN KEY (Room) REFERENCES Rooms(RoomID));"
         // Dummy values
         "INSERT INTO Users (Username, Password)"
         "VALUES ('John', 'Doe'), ('Duke', 'Nukem');"
         "INSERT INTO Messages (Author, Recipient, Contents)"
-        "VALUES (1, 2, 'Hi Duke, it is Joe!'), (2, 1, 'Hello Joe, it is I, Duke.');";
+        "VALUES (1, 2, 'Hi Duke, it is Joe!'), (2, 1, 'Hello Joe, it is I, Duke.');"
+        "INSERT INTO Rooms (Name)"
+        "VALUES ('Botanique'), ('Jardinage'), ('Horticulture');";
     // Return code
     int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
     if(rc != 0)
@@ -157,7 +211,7 @@ int init_db() {
     return rc;
 }
 
-// Avoids including sqlite3 in server.c
+// Avoids including sqlite3 in server.c (maintains loose coupling)
 int close_db() {
     return sqlite3_close(db);
 }

@@ -125,6 +125,9 @@ static void app(void)
             clients[actual] = c;
             actual++;
 
+            //TODO finish this
+            get_user_id(c.name);
+
             // Send history to client
             int i, n_history_lines = 0;
             char **history = get_history_db(c.sock, c.name, &n_history_lines);
