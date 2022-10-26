@@ -125,8 +125,8 @@ static void app(void)
             clients[actual] = c;
             actual++;
 
-            //TODO finish this
-            get_user_id(c.name);
+            c.id = get_user_id(c.name);
+            printf("User ID is %d\n", c.id);
 
             // Send history to client
             int i, n_history_lines = 0;

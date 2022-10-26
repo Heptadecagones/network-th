@@ -93,10 +93,11 @@ int get_user_id(char* client_name)
     // Get result and end transaction
     rc = sqlite3_step(res);
     check_error(rc);
+    int user_id = sqlite3_column_int(res, 0);
     sqlite3_finalize(res);
     
-    // Return 0 if done, 1 otherwise
-    return 1;
+    // Return user_id if done, -1 otherwise (negative ID = guest)
+    return rc == SQLITE_DONE ? -1 : user_id;
 }
 
 // Send messages in the order they arrived
