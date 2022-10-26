@@ -47,6 +47,7 @@ static void end(void)
     close_db();
 }
 
+//TODO refactor this mess
 static void app(void)
 {
     SOCKET sock = init_connection();
