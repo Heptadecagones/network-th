@@ -125,7 +125,7 @@ static void app(void)
 
             // Send history to client
             int i, n_history_lines = 0;
-            char **history = get_history_db(c.sock, c.name, &n_history_lines);
+            char **history = get_history_db(c.name, &n_history_lines);
             for(i = 0; i < n_history_lines; i++)
             {
                 write_client(c.sock, history[i]);
