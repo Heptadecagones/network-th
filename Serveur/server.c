@@ -6,6 +6,7 @@
 #include "server.h"
 #include "client.h"
 #include "dbutil.h"
+#include "commands.h"
 
 // If 1, reset DB at startup
 #define RESET_DB 1
@@ -154,6 +155,11 @@ static void app(void)
                         strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
                         // On récupère une chaîne de caractères message_send mise en forme par send_message_to_all_clients et allouée dynamiquement dans cette méthode
                         message_send = send_message_to_all_clients(clients, client, actual, buffer, 1);
+                    }
+                    else if(buffer[0] == '\\')
+                    {
+                        // Cas de l'envoi d'une commande
+                        read_command(buffer);
                     }
                     else
                     {
