@@ -8,10 +8,10 @@ all: client server
 .PHONY: client server
 
 client:
-	@$(MAKE) -C Client
+	@$(MAKE) -C fichiers-client
 
 server:
-	@$(MAKE) -C Serveur
+	@$(MAKE) -C fichiers-serveur
 
 clean:
 	rm -r client server **/*.o
