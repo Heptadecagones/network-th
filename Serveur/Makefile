@@ -9,7 +9,7 @@ all: ../server
 .SUFFIXES:
 	MAKEFLAGS += -r
 
-../server: server.o dbutil.o
+../server: server.o dbutil.o commands.o
 	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 	@echo [LD] $@
 
