@@ -2,3 +2,5 @@
 Session.vim
 *.o
 
+client
+server
