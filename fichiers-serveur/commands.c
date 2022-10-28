@@ -7,7 +7,7 @@
 
 #define BUF_SIZE    1024
 
-static int read_command(const char *command)
+int read_command(const char *command)
 {
     char * restrict arg1 = (char*) malloc(sizeof(char)*BUF_SIZE);
     char * restrict arg2 = (char*) malloc(sizeof(char)*BUF_SIZE);
