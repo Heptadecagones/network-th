@@ -48,6 +48,13 @@ static void end(void)
     close_db();
 }
 
+void write_prefix(Client c) {
+    char *room_name = get_room_name_by_id(c.current_room_id);
+    char room_prefix[35];
+    snprintf(room_prefix, 35, "╔[%s]═══", room_name);
+    write_client(c.sock, (char *)room_prefix);
+}
+
 //TODO refactor this mess
 static void app(void)
 {
@@ -109,7 +116,6 @@ static void app(void)
                 continue;
             }
 
-            //TODO Sanitize name (remove spaces, illegal characters...)
             printf("[LOG] %s connected.\n", buffer);
 
             /* what is the new maximum fd ? */
@@ -123,7 +129,7 @@ static void app(void)
             actual++;
 
             c.id = get_user_id(c.name);
-            printf("User ID is %d\n", c.id);
+            c.current_room_id = 1;
 
             // Send history to client
             int i, n_history_lines = 0;
@@ -134,6 +140,7 @@ static void app(void)
                 free(history[i]);
             }
             free(history);
+            write_prefix(c);
         }
         else
         {
@@ -152,9 +159,9 @@ static void app(void)
                         closesocket(clients[i].sock);
                         remove_client(clients, i, &actual);
                         strncpy(buffer, client.name, BUF_SIZE - 1);
-                        strncat(buffer, " disconnected !", BUF_SIZE - strlen(buffer) - 1);
+                        strncat(buffer, " disconnected.", BUF_SIZE - strlen(buffer) - 1);
                         // On récupère une chaîne de caractères message_send mise en forme par send_message_to_all_clients et allouée dynamiquement dans cette méthode
-                        message_send = send_message_to_all_clients(clients, client, actual, buffer, 1);
+                        message_send = send_message_to_room(clients, client, actual, buffer, 1);
                     }
                     else if(buffer[0] == '/')
                     {
@@ -181,7 +188,7 @@ static void app(void)
                     }
                     else
                     {
-                        message_send = send_message_to_all_clients(clients, client, actual, buffer, 0);
+                        message_send = send_message_to_room(clients, client, actual, buffer, 0);
                     }
 
                     // Car on a alloué avec malloc message_send dans 
@@ -214,7 +221,7 @@ static void remove_client(Client *clients, int to_remove, int *actual)
     (*actual)--;
 }
 
-static char* send_message_to_all_clients(Client *clients, Client sender, int actual, const char *buffer, char from_server)
+static char* send_message_to_room(Client *clients, Client sender, int actual, const char *buffer, char from_server)
 {
     int i = 0;
     char message[BUF_SIZE];
@@ -225,13 +232,18 @@ static char* send_message_to_all_clients(Client *clients, Client sender, int act
         /* we don't send message to the sender */
         if(sender.sock != clients[i].sock)
         {
-            if(from_server == 0)
-            {
+            if(from_server == 0) {
                 strncpy(message, sender.name, BUF_SIZE - 1);
-                strncat(message, " : ", sizeof message - strlen(message) - 1);
+                strncat(message, ": ", sizeof message - strlen(message) - 1);
             }
+            else
+                strncpy(message, "❭❭ ", BUF_SIZE - 1);
+
             strncat(message, buffer, sizeof message - strlen(message) - 1);
-            write_client(clients[i].sock, message);
+
+            // Only broadcast to users in the same room
+            if(clients[i].current_room_id == sender.current_room_id)
+                write_client(clients[i].sock, message);
         }
     }
     strncat(message, CRLF, sizeof message - strlen(message) - 1);
