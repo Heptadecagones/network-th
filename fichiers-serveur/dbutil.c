@@ -54,7 +54,7 @@ int auth_user(int user_id, char *password) {
     check_error(rc);
 
     // Bind value to query
-    rc = sqlite3_bind_int(res, 1, user_id); 
+    rc = sqlite3_bind_int(res, 1, user_id);
     rc = sqlite3_bind_text(res, 1, password, -1, NULL);
     check_error(rc);
 
@@ -89,6 +89,34 @@ int subscribe_user_to_room(int sock, char *client_name) {
     return rc == SQLITE_DONE ? 0 : 1;
 }
 
+int save_message(char *message) {
+    // Pre-built statement
+    sqlite3_stmt *res;
+    // Result code
+    int rc;
+
+    // Prepare parametrized query
+    char *sql = "INSERT INTO Messages (Author, Recipient, Contents) VALUES "
+                "(:author, :dest, :contents)";
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc);
+
+    // Bind value to query
+    rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
+    rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
+    rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
+    check_error(rc);
+
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    check_error(rc);
+    int user_id = sqlite3_column_int(res, 0);
+    sqlite3_finalize(res);
+
+    // Return user_id if done, -1 otherwise (negative ID = guest)
+    return rc == SQLITE_DONE ? -1 : user_id;
+}
+
 int get_user_id(char *client_name) {
     // Pre-built statement
     sqlite3_stmt *res;
@@ -102,6 +130,31 @@ int get_user_id(char *client_name) {
 
     // Bind value to query
     rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
+    check_error(rc);
+
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    check_error(rc);
+    int user_id = sqlite3_column_int(res, 0);
+    sqlite3_finalize(res);
+
+    // Return user_id if done, -1 otherwise (negative ID = guest)
+    return rc == SQLITE_DONE ? -1 : user_id;
+}
+
+int get_room_name_by_id(int room_id) {
+    // Pre-built statement
+    sqlite3_stmt *res;
+    // Result code
+    int rc;
+
+    // Prepare parametrized query
+    char *sql = "SELECT Rooms.Name FROM Rooms WHERE Rooms.RoomID = :id;";
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc);
+
+    // Bind value to query
+    rc = sqlite3_bind_int(res, 1, room_id);
     check_error(rc);
 
     // Get result and end transaction
