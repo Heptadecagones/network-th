@@ -79,6 +79,7 @@ int subscribe_user_to_room(int sock, char *client_name, char *room_name) {
 
     // Bind value to query
     rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
+    rc = sqlite3_bind_text(res, 2, room_name, -1, NULL);
     check_error(rc);
 
     // Get result and end transaction
@@ -89,33 +90,34 @@ int subscribe_user_to_room(int sock, char *client_name, char *room_name) {
     return rc == SQLITE_DONE ? 0 : 1;
 }
 
-// int save_message(char *message) {
-//     // Pre-built statement
-//     sqlite3_stmt *res;
-//     // Result code
-//     int rc;
+// Save a message in the database
+int save_message(char *msg, int sender_id, int dest_id) {
+    // Pre-built statement
+    sqlite3_stmt *res;
+    // Result code
+    int rc;
 
-//     // Prepare parametrized query
-//     char *sql = "INSERT INTO Messages (Author, Recipient, Contents) VALUES "
-//                 "(:author, :dest, :contents)";
-//     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-//     check_error(rc);
+    // Prepare parametrized query
+    char *sql = "INSERT INTO Messages (Author, Recipient, Contents) VALUES "
+                "(:author, :dest, :contents)";
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc);
 
-//     // Bind value to query
-//     rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
-//     rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
-//     rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
-//     check_error(rc);
+    // Bind value to query
+    rc = sqlite3_bind_int(res, 1, sender_id);
+    rc = sqlite3_bind_int(res, 2, dest_id);
+    rc = sqlite3_bind_text(res, 3, msg, -1, NULL);
+    check_error(rc);
 
-//     // Get result and end transaction
-//     rc = sqlite3_step(res);
-//     check_error(rc);
-//     int user_id = sqlite3_column_int(res, 0);
-//     sqlite3_finalize(res);
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    check_error(rc);
+    int user_id = sqlite3_column_int(res, 0);
+    sqlite3_finalize(res);
 
-//     // Return user_id if done, -1 otherwise (negative ID = guest)
-//     return rc == SQLITE_DONE ? -1 : user_id;
-// }
+    // Return user_id if done, -1 otherwise (negative ID = guest)
+    return rc == SQLITE_DONE ? -1 : user_id;
+}
 
 int get_user_id(char *client_name) {
     // Pre-built statement
@@ -166,6 +168,31 @@ char* get_room_name_by_id(int room_id) {
 
     // Return user_id if done, -1 otherwise (negative ID = guest)
     return room_name;
+}
+
+int get_room_id_by_name(char *room_name) {
+    // Pre-built statement
+    sqlite3_stmt *res;
+    // Result code
+    int rc;
+
+    // Prepare parametrized query
+    char *sql = "SELECT Rooms.RoomID FROM Rooms WHERE Rooms.Name = :name;";
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc);
+
+    // Bind value to query
+    rc = sqlite3_bind_text(res, 1, room_name, -1, NULL);
+    check_error(rc);
+
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    check_error(rc);
+    int room_id = sqlite3_column_int(res, 0);
+    sqlite3_finalize(res);
+
+    // Return user_id if done, -1 otherwise (negative ID = guest)
+    return room_id;
 }
 
 // Send messages in the order they arrived
@@ -243,14 +270,6 @@ int reset_db() {
                 "CREATE TABLE Rooms("
                 "RoomID INTEGER PRIMARY KEY AUTOINCREMENT,"
                 "Name TEXT);"
-                // User_Rooms table
-                "DROP TABLE IF EXISTS User_rooms;"
-                "CREATE TABLE User_rooms("
-                "User INT,"
-                "Room INT,"
-                "UNIQUE(User, Room),"
-                "FOREIGN KEY (User) REFERENCES Users(UserID),"
-                "FOREIGN KEY (Room) REFERENCES Rooms(RoomID));"
                 // Dummy values
                 "INSERT INTO Users (Username, Password)"
                 "VALUES ('John', 'Doe'), ('Duke', 'Nukem');"
