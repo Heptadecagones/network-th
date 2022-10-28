@@ -89,33 +89,33 @@ int subscribe_user_to_room(int sock, char *client_name) {
     return rc == SQLITE_DONE ? 0 : 1;
 }
 
-int save_message(char *message) {
-    // Pre-built statement
-    sqlite3_stmt *res;
-    // Result code
-    int rc;
+// int save_message(char *message) {
+//     // Pre-built statement
+//     sqlite3_stmt *res;
+//     // Result code
+//     int rc;
 
-    // Prepare parametrized query
-    char *sql = "INSERT INTO Messages (Author, Recipient, Contents) VALUES "
-                "(:author, :dest, :contents)";
-    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    check_error(rc);
+//     // Prepare parametrized query
+//     char *sql = "INSERT INTO Messages (Author, Recipient, Contents) VALUES "
+//                 "(:author, :dest, :contents)";
+//     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+//     check_error(rc);
 
-    // Bind value to query
-    rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
-    rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
-    rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
-    check_error(rc);
+//     // Bind value to query
+//     rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
+//     rc = sqlite3_bind_int(res, 1, client_name, -1, NULL);
+//     rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
+//     check_error(rc);
 
-    // Get result and end transaction
-    rc = sqlite3_step(res);
-    check_error(rc);
-    int user_id = sqlite3_column_int(res, 0);
-    sqlite3_finalize(res);
+//     // Get result and end transaction
+//     rc = sqlite3_step(res);
+//     check_error(rc);
+//     int user_id = sqlite3_column_int(res, 0);
+//     sqlite3_finalize(res);
 
-    // Return user_id if done, -1 otherwise (negative ID = guest)
-    return rc == SQLITE_DONE ? -1 : user_id;
-}
+//     // Return user_id if done, -1 otherwise (negative ID = guest)
+//     return rc == SQLITE_DONE ? -1 : user_id;
+// }
 
 int get_user_id(char *client_name) {
     // Pre-built statement
@@ -142,7 +142,7 @@ int get_user_id(char *client_name) {
     return rc == SQLITE_DONE ? -1 : user_id;
 }
 
-int get_room_name_by_id(int room_id) {
+char* get_room_name_by_id(int room_id) {
     // Pre-built statement
     sqlite3_stmt *res;
     // Result code
@@ -160,11 +160,12 @@ int get_room_name_by_id(int room_id) {
     // Get result and end transaction
     rc = sqlite3_step(res);
     check_error(rc);
-    int user_id = sqlite3_column_int(res, 0);
+    char* room_name = malloc(sizeof(const unsigned char*)*30);
+    strcpy(room_name, (char*)sqlite3_column_text(res, 0));
     sqlite3_finalize(res);
 
     // Return user_id if done, -1 otherwise (negative ID = guest)
-    return rc == SQLITE_DONE ? -1 : user_id;
+    return room_name;
 }
 
 // Send messages in the order they arrived
@@ -257,7 +258,7 @@ int reset_db() {
                 "VALUES (1, 2, 'Hi Duke, it is Joe!'), (2, 1, 'Hello Joe, it "
                 "is I, Duke.');"
                 "INSERT INTO Rooms (Name)"
-                "VALUES ('Botanique'), ('Jardinage'), ('Horticulture');";
+                "VALUES ('general'), ('Jardinage'), ('Horticulture');";
     // Return code
     int rc = sqlite3_exec(db, sql, 0, 0, &err_msg);
     if (rc != 0)
