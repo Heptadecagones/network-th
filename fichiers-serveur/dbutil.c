@@ -66,7 +66,7 @@ int auth_user(int user_id, char *password) {
     return rc == SQLITE_DONE ? 0 : 1;
 }
 
-int subscribe_user_to_room(int sock, char *client_name) {
+int subscribe_user_to_room(int sock, char *client_name, char *room_name) {
     // Pre-built statement
     sqlite3_stmt *res;
     // Result code

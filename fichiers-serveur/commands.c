@@ -6,11 +6,17 @@
 #include "commands.h"
 
 #define BUF_SIZE    1024
+#define MAX_ARG     2
+//#define COMMAND_AMOUNT  4
 
-int read_command(const char *command)
+char **read_command(const char *command)
 {
-    char * restrict arg1 = (char*) malloc(sizeof(char)*BUF_SIZE);
-    char * restrict arg2 = (char*) malloc(sizeof(char)*BUF_SIZE);
+    char ** res = (char**) malloc(sizeof(char*) * (MAX_ARG + 1));
+    res[0] = (char*) malloc(sizeof(char)*3);
+    for(int i = 0; i < MAX_ARG; i++)
+    {
+        res[i+1] = (char * restrict) malloc(sizeof(char)*BUF_SIZE);
+    }
     const char* restrict delimiter = " "; 
 
     char commandCopy[strlen(command) + 1];
@@ -18,33 +24,46 @@ int read_command(const char *command)
 
     char *temp = strtok(commandCopy, delimiter);
 
-    /* A vérifier : command est interprêté sans prendre en compte l'espacement du \ , */
-    if (!strncmp("/join", command, 5))       // Checks only the first 5 characters of command (so it doesn't take the argument)
+    if(!strncmp("/register", command, 8) || !strncmp("/w", command, 2))
     {
-        strcpy(arg1, temp);                             // On suppose que le message envoyé est bien \join et pas /join.
-        // Commande de join
-        printf("commande /join reçue avec comme paramètre : %s\r\n", arg1);
+        /* /register [id] [password] */
+        strcpy(res[0], "0");
+
+        strcpy(res[1], temp);
+        temp = strtok(temp, delimiter);
+        strcpy(res[2], temp);
+        
+        printf("commande /register reçue avec comme paramètre : %s et %s\r\n", res[1], res[2]);
+    }
+    else if (!strncmp("/join", command, 5))       // Checks only the first 5 characters of command (so it doesn't take the argument)
+    {
+        /* /join [chanel] */
+        strcpy(res[0], "1");
+
+        strcpy(res[1], temp);                             // On suppose que le message envoyé est bien /join
+        printf("commande /join reçue avec comme paramètre : %s\r\n", res[1]);
     }
     else if(!strncmp("/leave", command, 6))
     {
-        strcpy(arg1, temp);
+        strcpy(res[0], "2");
+
+        strcpy(res[1], temp);
         // Commande de leave
-        printf("commande /leave reçue avec comme paramètre : %s\r\n", arg1);
+        printf("commande /leave reçue avec comme paramètre : %s\r\n", res[1]);
     }
     else if(!strncmp("/whisper", command, 8) || !strncmp("/w", command, 2))
     {
-        strcpy(arg1, temp);
+        strcpy(res[0], "3");
+
+        strcpy(res[1], temp);
         temp = strtok(temp, delimiter);
-        strcpy(arg2, temp);
+        strcpy(res[2], temp);
         // Commande de whisper
-        printf("commande /whisper reçue avec comme paramètre : %s et %s\r\n", arg1, arg2);
+        printf("commande /whisper reçue avec comme paramètre : %s et %s\r\n", res[1], res[2]);
     }
     else {
         printf("Commande non reconnue\r\n");
     }
-    free(arg1);
-    free(arg2);
-    free(temp);
     
-    return 0;
+    return res;
 }

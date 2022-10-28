@@ -156,10 +156,28 @@ static void app(void)
                         // On récupère une chaîne de caractères message_send mise en forme par send_message_to_all_clients et allouée dynamiquement dans cette méthode
                         message_send = send_message_to_all_clients(clients, client, actual, buffer, 1);
                     }
-                    else if(buffer[0] == '\\')
+                    else if(buffer[0] == '/')
                     {
                         // Cas de l'envoi d'une commande
-                        read_command(buffer);
+                        // read_command renvoi un pointeur déjà alloué en mémoire
+                        char **res = read_command(buffer);
+                        switch(atoi(res[0]))
+                        {
+                            case 0:
+                                auth_user(atoi(res[1]), res[2]);
+                                break;
+                            case 1:
+                                subscribe_user_to_room(clients[i].sock, clients[i].name, res[1]);
+                                break;
+                            case 2:
+                                // leave
+                                break;
+                            case 3:
+                                // leave
+                                break;
+                            default:
+                                write_client(clients[i].sock, "Unknown command\r\n");
+                        }
                     }
                     else
                     {

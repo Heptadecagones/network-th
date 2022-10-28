@@ -1,1 +1,1 @@
-int read_command(const char *command);
+char **read_command(const char *command);
