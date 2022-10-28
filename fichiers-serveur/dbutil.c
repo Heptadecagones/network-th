@@ -66,30 +66,6 @@ int auth_user(int user_id, char *password) {
     return rc == SQLITE_DONE ? 0 : 1;
 }
 
-int subscribe_user_to_room(int sock, char *client_name, char *room_name) {
-    // Pre-built statement
-    sqlite3_stmt *res;
-    // Result code
-    int rc;
-
-    // Prepare parametrized query
-    char *sql = "INSERT INTO User_rooms (User, room) VALUES (:user, :room)";
-    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
-    check_error(rc);
-
-    // Bind value to query
-    rc = sqlite3_bind_text(res, 1, client_name, -1, NULL);
-    rc = sqlite3_bind_text(res, 2, room_name, -1, NULL);
-    check_error(rc);
-
-    // Get result and end transaction
-    rc = sqlite3_step(res);
-    sqlite3_finalize(res);
-
-    // Return 0 if done, 1 otherwise
-    return rc == SQLITE_DONE ? 0 : 1;
-}
-
 // Save a message in the database
 int save_message(char *msg, int sender_id, int dest_id) {
     // Pre-built statement
@@ -191,8 +167,8 @@ int get_room_id_by_name(char *room_name) {
     int room_id = sqlite3_column_int(res, 0);
     sqlite3_finalize(res);
 
-    // Return user_id if done, -1 otherwise (negative ID = guest)
-    return room_id;
+    // Return room_id if done, -1 otherwise (negative ID = guest)
+    return rc == SQLITE_ROW ? room_id : -1;
 }
 
 // Send messages in the order they arrived

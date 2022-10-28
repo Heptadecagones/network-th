@@ -37,4 +37,4 @@ signal SIGKILL, la connexion ne se ferme pas à la sortie du serveur.
 - [X] BD persistente
 - [X] Gestion multi-client
 - [ ] Chiffrement de la connexion
-- [ ] Groupes de discussion
+- [X] Groupes de discussion

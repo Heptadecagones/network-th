@@ -49,9 +49,10 @@ static void end(void)
 }
 
 void write_prefix(Client c) {
+    printf("Entered write_prefix\n");
     char *room_name = get_room_name_by_id(c.current_room_id);
     char room_prefix[35];
-    snprintf(room_prefix, 35, "╔[%s]═══", room_name);
+    snprintf(room_prefix, 35, "╔[%s]═══\n", room_name);
     write_client(c.sock, (char *)room_prefix);
 }
 
@@ -168,13 +169,18 @@ static void app(void)
                         // Cas de l'envoi d'une commande
                         // read_command renvoi un pointeur déjà alloué en mémoire
                         char **res = read_command(buffer);
+                        int room_id;
+                        printf("res[0] is %d \n", atoi(res[0]));
                         switch(atoi(res[0]))
                         {
                             case 0:
                                 auth_user(atoi(res[1]), res[2]);
                                 break;
                             case 1:
-                                subscribe_user_to_room(clients[i].sock, clients[i].name, res[1]);
+                                printf("Entered switch join\n");
+                                room_id = get_room_id_by_name(res[1]); 
+                                clients[i].current_room_id = room_id;
+                                write_prefix(clients[i]);
                                 break;
                             case 2:
                                 // leave
