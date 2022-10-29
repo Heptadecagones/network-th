@@ -146,7 +146,7 @@ static void app(void)
         else
         {
             int i = 0;
-            char* message_send;
+            char* error_or_help_message = (char*) malloc(sizeof(char)*BUF_SIZE);
             for(i = 0; i < actual; i++)
             {
                 /* a client is talking */
@@ -161,8 +161,7 @@ static void app(void)
                         remove_client(clients, i, &actual);
                         strncpy(buffer, client.name, BUF_SIZE - 1);
                         strncat(buffer, " disconnected.", BUF_SIZE - strlen(buffer) - 1);
-                        // On récupère une chaîne de caractères message_send mise en forme par send_message_to_all_clients et allouée dynamiquement dans cette méthode
-                        message_send = send_message_to_room(clients, client, actual, buffer, 1);
+                        send_message_to_room(clients, client, actual, buffer, 1);
                     }
                     else if(buffer[0] == '/')
                     {
@@ -188,18 +187,27 @@ static void app(void)
                             case 3:
                                 // leave
                                 break;
+                            case 4:
+                                strcat(error_or_help_message, "List of commands :\n");
+                                strcat(error_or_help_message, "\t/register [id] [password]\n");
+                                strcat(error_or_help_message, "\t/join [canal]\n");
+                                strcat(error_or_help_message, "\t/leave [canal]\n");
+                                strcat(error_or_help_message, "\t/whisper [canal]\n");
+                                strcat(error_or_help_message, "\t/help\n");
+                                strcat(error_or_help_message, "List of aliases :\n");
+                                strcat(error_or_help_message, "\t/w for /whisper\n");
+                                strcat(error_or_help_message, "\t/h for /help\n");
+
+                                write_client(clients[i].sock, error_or_help_message);
+                                break;
                             default:
                                 write_client(clients[i].sock, "Unknown command\r\n");
                         }
                     }
                     else
                     {
-                        message_send = send_message_to_room(clients, client, actual, buffer, 0);
+                        send_message_to_room(clients, client, actual, buffer, 0);
                     }
-
-                    // Car on a alloué avec malloc message_send dans 
-                    // send_message_to_all_clients
-                    free(message_send);     
                     break;
                 }
             }

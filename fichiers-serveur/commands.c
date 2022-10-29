@@ -64,6 +64,10 @@ char **read_command(const char *command)
         // Commande de whisper
         printf("commande /whisper reçue avec comme paramètre : %s et %s\r\n", res[1], res[2]);
     }
+    else if(!strncmp("/help", command, 5) || !strncmp("/h", command, 2))
+    {
+        strcpy(res[0], "4");
+    }
     else {
         printf("Commande non reconnue\r\n");
         strcpy(res[0], "-1");
