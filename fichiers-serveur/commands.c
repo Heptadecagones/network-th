@@ -57,7 +57,17 @@ char **read_command(const char *command)
         temp = strtok(NULL, delimiter);
         strcpy(res[1], temp);
         temp = strtok(NULL, delimiter);
+        // gets the first word of the message
         strcpy(res[2], temp);
+        temp = strtok(NULL, delimiter);
+        while( temp != NULL )
+        {
+            // Adds the other words (and the space each time it is needed)
+            strcat(res[2], temp);
+            strcat(res[2], " ");
+            temp = strtok(NULL, delimiter);
+            printf("temp is : %s\n", temp);
+        }
         // Commande de whisper
         printf("commande /whisper reçue avec comme paramètre : %s et %s\r\n", res[1], res[2]);
     }

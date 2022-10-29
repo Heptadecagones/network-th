@@ -56,6 +56,22 @@ void write_prefix(Client c) {
     write_client(c.sock, (char *)room_prefix);
 }
 
+SOCKET find_client_socket_by_name(Client* clients, const char* name)
+{
+    int i;
+    int sock = -1;  // Default value if the user is not found
+    for(i = 0; i < MAX_CLIENTS; i++ )
+    {
+        if(!strcmp(name, clients[i].name))
+        {
+            sock = clients[i].sock;
+            break;
+        }
+    }
+
+    return sock;
+}
+
 //TODO refactor this mess
 static void app(void)
 {
@@ -146,7 +162,9 @@ static void app(void)
         else
         {
             int i = 0;
-            char* error_or_help_message = (char*) malloc(sizeof(char)*BUF_SIZE);
+            char* server_to_client_message;
+            char* whisper_message;
+            SOCKET whisper_target_socket;
             for(i = 0; i < actual; i++)
             {
                 /* a client is talking */
@@ -169,6 +187,7 @@ static void app(void)
                         // read_command renvoi un pointeur déjà alloué en mémoire
                         char **res = read_command(buffer);
                         int room_id;
+                        int whisper_message_size;
                         printf("res[0] is %d \n", atoi(res[0]));
                         switch(atoi(res[0]))
                         {
@@ -182,26 +201,45 @@ static void app(void)
                                 write_prefix(clients[i]);
                                 break;
                             case 2:
-                                // To be tested
                                 clients[i].current_room_id = 1;
                                 write_prefix(clients[i]);
                                 break;
                             case 3:
                                 // whisper
+                                whisper_target_socket = find_client_socket_by_name(clients, res[1]);
+                                if(whisper_target_socket != -1)
+                                {
+                                    /* User found */
+                                    whisper_message_size = BUF_SIZE + strlen("-> whisper from ") + strlen(clients[i].name) + strlen(": ");
+                                    whisper_message = (char*) malloc(sizeof(char)*whisper_message_size);
+                                    strcat(whisper_message, "-> whisper from ");
+                                    strcat(whisper_message, clients[i].name);
+                                    strcat(whisper_message, ": ");
+                                    strcat(whisper_message, res[2]);
+                                    write_client(whisper_target_socket, whisper_message);
+                                    free(whisper_message);
+                                }
+                                else
+                                {
+                                    /* User not found */
+                                    write_client(clients[i].sock, "User not found");
+                                }
                                 break;
                             case 4:
-                                strcat(error_or_help_message, "List of commands :\n");
-                                strcat(error_or_help_message, "\t/register [id] [password]\n");
-                                strcat(error_or_help_message, "\t/join [channel]\n");
-                                strcat(error_or_help_message, "\t/leave\n");
-                                strcat(error_or_help_message, "\t/whisper [canal]\n");
-                                strcat(error_or_help_message, "\t/help\n");
-                                strcat(error_or_help_message, "List of aliases :\n");
-                                strcat(error_or_help_message, "\t/w for /whisper\n");
-                                strcat(error_or_help_message, "\t/h for /help\n");
-                                strcat(error_or_help_message, "The /leave command let's you go back to the General channel\n");
+                                server_to_client_message = (char*) malloc(sizeof(char)*BUF_SIZE);
+                                strcat(server_to_client_message, "List of commands :\n");
+                                strcat(server_to_client_message, "\t/register [id] [password]\n");
+                                strcat(server_to_client_message, "\t/join [channel]\n");
+                                strcat(server_to_client_message, "\t/leave\n");
+                                strcat(server_to_client_message, "\t/whisper [user] [message]\n");
+                                strcat(server_to_client_message, "\t/help\n");
+                                strcat(server_to_client_message, "List of aliases :\n");
+                                strcat(server_to_client_message, "\t/w for /whisper\n");
+                                strcat(server_to_client_message, "\t/h for /help\n");
+                                strcat(server_to_client_message, "The /leave command lets you go back to the General channel\n");
 
-                                write_client(clients[i].sock, error_or_help_message);
+                                write_client(clients[i].sock, server_to_client_message);
+                                free(server_to_client_message);
                                 break;
                             default:
                                 write_client(clients[i].sock, "Unknown command\r\n");
