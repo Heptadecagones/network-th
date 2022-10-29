@@ -182,21 +182,24 @@ static void app(void)
                                 write_prefix(clients[i]);
                                 break;
                             case 2:
-                                // leave
+                                // To be tested
+                                clients[i].current_room_id = 1;
+                                write_prefix(clients[i]);
                                 break;
                             case 3:
-                                // leave
+                                // whisper
                                 break;
                             case 4:
                                 strcat(error_or_help_message, "List of commands :\n");
                                 strcat(error_or_help_message, "\t/register [id] [password]\n");
-                                strcat(error_or_help_message, "\t/join [canal]\n");
-                                strcat(error_or_help_message, "\t/leave [canal]\n");
+                                strcat(error_or_help_message, "\t/join [channel]\n");
+                                strcat(error_or_help_message, "\t/leave\n");
                                 strcat(error_or_help_message, "\t/whisper [canal]\n");
                                 strcat(error_or_help_message, "\t/help\n");
                                 strcat(error_or_help_message, "List of aliases :\n");
                                 strcat(error_or_help_message, "\t/w for /whisper\n");
                                 strcat(error_or_help_message, "\t/h for /help\n");
+                                strcat(error_or_help_message, "The /leave command let's you go back to the General channel\n");
 
                                 write_client(clients[i].sock, error_or_help_message);
                                 break;

@@ -48,9 +48,6 @@ char **read_command(const char *command)
     {
         strcpy(res[0], "2");
 
-        temp = strtok(NULL, delimiter);
-        strcpy(res[1], temp);
-        // Commande de leave
         printf("commande /leave reçue avec comme paramètre : %s\r\n", res[1]);
     }
     else if(!strncmp("/whisper", command, 8) || !strncmp("/w", command, 2))
