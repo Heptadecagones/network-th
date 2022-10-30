@@ -15,7 +15,6 @@
 const char help_text[] = "List of commands :\n"
                          "\t/register [password]\n"
                          "\t/login [password]\n"
-                         "\t/channels\n"
                          "\t/join [channel]\n"
                          "\t/leave\n"
                          "\t/whisper [user] [message]\n"
@@ -152,7 +151,7 @@ static void app(void) {
                 free(history[i]);
             }
             free(history);
-            if(get_user_id(c.name) != -1)
+            if (get_user_id(c.name) != -1)
                 write_client(c.sock, "You still have to login.");
             write_client(c.sock, "Use /help to see available commands.");
             char *welcome_message = c.name;
@@ -184,7 +183,6 @@ static void app(void) {
                         // read_command renvoi un pointeur déjà alloué en
                         // mémoire
                         char **res = read_command(buffer);
-                        char second_buffer[BUF_SIZE];
                         int room_id;
                         int whisper_message_size;
                         switch (atoi(res[0])) {
@@ -205,16 +203,6 @@ static void app(void) {
                             break;
                         case 1: // Join a room
                             room_id = get_room_id_by_name(res[1]);
-
-                            strncpy(buffer, client.name, BUF_SIZE - 1);
-                            strncat(buffer, " left the channel.",
-                                    BUF_SIZE - strlen(buffer) - 1);
-
-                            strncpy(second_buffer, client.name, BUF_SIZE - 1);
-                            strncat(second_buffer, " joined the channel.",
-                                    BUF_SIZE - strlen(second_buffer) - 1);
-                            send_message_to_room(clients, client, actual,
-                                                 second_buffer, 1);
                             clients[i].current_room_id = room_id;
                             write_prefix(clients[i]);
                             break;
@@ -233,9 +221,6 @@ static void app(void) {
                                     strlen(clients[i].name) + strlen(": ");
                                 message = (char *)malloc(sizeof(char) *
                                                          whisper_message_size);
-
-                                printf("Ids are %d and %d\r\n", clients[i].id,
-                                       target_client->id);
                                 if (clients[i].id != -1 &&
                                     target_client->id != -1) {
                                     // Verify if SQlite version is good enough
@@ -243,8 +228,7 @@ static void app(void) {
                                         timestamp =
                                             save_message(res[2], clients[i].id,
                                                          target_client->id);
-                                    } else 
-                                    {
+                                    } else {
                                         timestamp = "SQL version insufficient";
                                     }
                                 }
