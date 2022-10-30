@@ -41,7 +41,7 @@ char **read_command(const char *command)
         arg_amount = 1;
         strcpy(res[0], "0");
 
-        extraction_result = extract_arguments(res, arg_amount, command, delimiter);
+        extraction_result = extract_arguments(res, arg_amount, command, delimiter, 0);
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         
@@ -54,7 +54,7 @@ char **read_command(const char *command)
         arg_amount = 1;
         strcpy(res[0], "1");
 
-        extraction_result = extract_arguments(res, arg_amount, command, delimiter);
+        extraction_result = extract_arguments(res, arg_amount, command, delimiter, 0);
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         printf("commande /join reçue avec comme paramètre : %s\r\n", res[1]);
@@ -72,7 +72,7 @@ char **read_command(const char *command)
         arg_amount = 2;
         strcpy(res[0], "3");
 
-       extraction_result = extract_arguments(res, arg_amount, command, delimiter);
+       extraction_result = extract_arguments(res, arg_amount, command, delimiter, 1);
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         // Commande de whisper
@@ -89,7 +89,7 @@ char **read_command(const char *command)
         arg_amount = 1;
         strcpy(res[0], "5");
 
-        extraction_result = extract_arguments(res, arg_amount, command, delimiter);
+        extraction_result = extract_arguments(res, arg_amount, command, delimiter, 0);
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         
@@ -105,8 +105,10 @@ char **read_command(const char *command)
 }
 
 /* Returns -1 if the number of arg_amount is more than the value of MAX_ARG.
-   Otherwise sends the number of the first missing argument. */
-int extract_arguments(char **arg_dest,int arg_amount, const char *command, const char * restrict delimiter)
+   Otherwise sends the number of the first missing argument.
+   Set last_arg_is_message to 1 if the last argument must consider all
+   last words as one argument. */
+int extract_arguments(char **arg_dest,int arg_amount, const char *command, const char * restrict delimiter, int last_arg_is_message)
 {
     int res = 0;
     int i;
@@ -130,12 +132,12 @@ int extract_arguments(char **arg_dest,int arg_amount, const char *command, const
         else
         {
             
-            if(i == arg_amount)
+            if(last_arg_is_message && i == arg_amount)
             {
                 do
                 {
                     strcat(arg_dest[i], temp);
-                    strcat(arg_dest[i], "\0");
+                    strcat(arg_dest[i], " \0");
                     temp = strtok(NULL, delimiter);
                 } while(temp != NULL);
                 /* This is considering only the last argument may be a phrase. */

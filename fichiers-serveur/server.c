@@ -210,7 +210,7 @@ static void app(void) {
                                 message = (char *)malloc(sizeof(char) *
                                                          whisper_message_size);
 
-                                printf("Ids are %d and %d", clients[i].id,
+                                printf("Ids are %d and %d\r\n", clients[i].id,
                                        target_client->id);
                                 timestamp = save_message(res[2], clients[i].id,
                                                          target_client->id);
@@ -246,6 +246,12 @@ static void app(void) {
                             write_client(clients[i].sock,
                                          "Unknown command\r\n");
                         }
+                        if(res[2] != NULL) free(res[2]);
+                        else printf("res[2] is %s\r\n", res[2]);
+                        if(res[1] != NULL) free(res[1]);
+                        else printf("res[1] is %s\r\n", res[1]);
+                        if(res[0] != NULL) free(res[0]);
+                        else printf("res[0] is %s\r\n", res[0]);
                         free(res[2]);
                         free(res[1]);
                         free(res[0]);
