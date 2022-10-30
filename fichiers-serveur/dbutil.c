@@ -66,8 +66,8 @@ int auth_user(int user_id, char *password) {
     return rc == SQLITE_DONE ? 0 : 1;
 }
 
-// Save a message in the database
-int save_message(char *msg, int sender_id, int dest_id) {
+// Save a message in the database and return the save time
+char* save_message(char *msg, int sender_id, int dest_id) {
     // Pre-built statement
     sqlite3_stmt *res;
     // Result code
@@ -75,7 +75,7 @@ int save_message(char *msg, int sender_id, int dest_id) {
 
     // Prepare parametrized query
     char *sql = "INSERT INTO Messages (Author, Recipient, Contents) VALUES "
-                "(:author, :dest, :contents)";
+                "(:author, :dest, :contents) RETURNING Timestamp;";
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
     check_error(rc);
 
@@ -88,11 +88,12 @@ int save_message(char *msg, int sender_id, int dest_id) {
     // Get result and end transaction
     rc = sqlite3_step(res);
     check_error(rc);
-    int user_id = sqlite3_column_int(res, 0);
+    char* timestamp = (char*)malloc(sizeof(char)* 40);
+    strcpy(timestamp, (char*)sqlite3_column_text(res, 0));
     sqlite3_finalize(res);
 
     // Return user_id if done, -1 otherwise (negative ID = guest)
-    return rc == SQLITE_DONE ? -1 : user_id;
+    return timestamp;
 }
 
 int get_user_id(char *client_name) {
