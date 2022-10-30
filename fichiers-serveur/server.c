@@ -212,7 +212,7 @@ static void app(void)
                                     /* User found */
                                     whisper_message_size = BUF_SIZE + strlen("-> whisper from ") + strlen(clients[i].name) + strlen(": ");
                                     whisper_message = (char*) malloc(sizeof(char)*whisper_message_size);
-                                    strcat(whisper_message, "-> whisper from ");
+                                    strcpy(whisper_message, "-> whisper from ");
                                     strcat(whisper_message, clients[i].name);
                                     strcat(whisper_message, ": ");
                                     strcat(whisper_message, res[2]);
@@ -234,6 +234,7 @@ static void app(void)
                                 strcat(server_to_client_message, "\t/whisper [user] [message]\n");
                                 strcat(server_to_client_message, "\t/help\n");
                                 strcat(server_to_client_message, "List of aliases :\n");
+                                strcat(server_to_client_message, "\t/r for /register\n");
                                 strcat(server_to_client_message, "\t/w for /whisper\n");
                                 strcat(server_to_client_message, "\t/h for /help\n");
                                 strcat(server_to_client_message, "The /leave command lets you go back to the General channel\n");
@@ -241,9 +242,16 @@ static void app(void)
                                 write_client(clients[i].sock, server_to_client_message);
                                 free(server_to_client_message);
                                 break;
+                            case -2:
+                                write_client(clients[i].sock, "Not enough arguments");
+                                break;
                             default:
                                 write_client(clients[i].sock, "Unknown command\r\n");
                         }
+                        free(res[2]);
+                        free(res[1]);
+                        free(res[0]);
+                        free(res);
                     }
                     else
                     {
