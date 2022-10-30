@@ -35,7 +35,7 @@ char **read_command(const char *command)
     /*char commandCopy[strlen(command) + 1];
     strcpy(commandCopy, command);
     char *temp = strtok(commandCopy, delimiter);*/
-    if(!strncmp("/register", command, 8) || !strncmp("/r", command, 2))
+    if(!strncmp("/register", command, 9) || !strncmp("/r", command, 2))
     {
         /* /register [password] */
         arg_amount = 1;
@@ -82,6 +82,19 @@ char **read_command(const char *command)
     {
         /* /help */
         strcpy(res[0], "4");
+    }
+    else if(!strncmp("/login", command, 6) || !strncmp("/r", command, 2))
+    {
+        /* /login [password] */
+        arg_amount = 1;
+        strcpy(res[0], "5");
+
+        extraction_result = extract_arguments(res, arg_amount, command, delimiter);
+        /* Case where there are not enough arguments */
+        if(extraction_result) strcpy(res[0], "-2");
+        
+        printf("commande /login reçue avec comme paramètre : %s\r\n", res[1]);
+
     }
     else {
         printf("Commande non reconnue\r\n");

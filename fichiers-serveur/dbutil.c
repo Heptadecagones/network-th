@@ -68,26 +68,28 @@ int register_user(char* uname, char *password) {
 }
 
 // Check password input against stored password
-int auth_user(int user_id, char *password) {
+int auth_user(char* username, char *password) {
     sqlite3_stmt *res;
     int rc;
     char *sql =
-        "SELECT UserID FROM Users WHERE UserID == :id AND Password == :pw";
+        "SELECT Username FROM Users WHERE Username = :name AND Password = :pw;";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
     check_error(rc);
 
     // Bind value to query
-    rc = sqlite3_bind_int(res, 1, user_id);
-    rc = sqlite3_bind_text(res, 1, password, -1, NULL);
+    rc = sqlite3_bind_text(res, 1, username, -1, NULL);
+    rc = sqlite3_bind_text(res, 2, password, -1, NULL);
     check_error(rc);
 
+    printf("SQL is %s\n", sqlite3_expanded_sql(res));
     // Get result and end transaction
     rc = sqlite3_step(res);
+    char* user_id = (char*)sqlite3_column_text(res, 0);
+    printf("User id was given: %s\n", user_id);
     sqlite3_finalize(res);
 
-    // Return 0 if done, 1 otherwise
-    return rc == SQLITE_DONE ? 0 : 1;
+    return 0;
 }
 
 // Save a message in the database and return the save time

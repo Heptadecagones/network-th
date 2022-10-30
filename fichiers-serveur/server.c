@@ -13,7 +13,7 @@
 #define RESET_DB 1
 
 const char help_text[] = "List of commands :\n"
-                         "\t/register [id] [password]\n"
+                         "\t/register [password]\n"
                          "\t/join [channel]\n"
                          "\t/leave\n"
                          "\t/whisper [user] [message]\n"
@@ -136,8 +136,7 @@ static void app(void) {
             Client c = {csock, "", 'g'};
             strncpy(c.name, buffer, BUF_SIZE - 1);
 
-            c.id = get_user_id(c.name);
-            printf("Loggede ID is %d\n", c.id);
+            c.id = -1; // Guest mode as long as the user doesn't log in
             c.current_room_id = 1;
             clients[actual] = c;
             actual++;
@@ -155,6 +154,7 @@ static void app(void) {
             int i = 0;
             char *message, *timestamp;
             Client *target_client;
+            int temp;
             for (i = 0; i < actual; i++) {
                 /* a client is talking */
                 if (FD_ISSET(clients[i].sock, &rdfs)) {
@@ -179,14 +179,17 @@ static void app(void) {
                         printf("res[0] is %d \n", atoi(res[0]));
                         switch (atoi(res[0])) {
                         case 0: // Register
-                            if(clients[i].id == -1)
-                                clients[i].id =
-                                    register_user(clients[i].name, res[1]);
-                            else
-                                    write_client(clients[i].sock, "You are already logged in.");
+                            if (clients[i].id == -1) {
+                                temp = register_user(clients[i].name, res[1]);
+                                if(temp != -1)
+                                    clients[i].id = temp;
+                                else
+                                    write_client(clients[i].sock, "Error: Username might be taken.");
+                            } else
+                                write_client(clients[i].sock,
+                                             "You are already logged in.");
                             break;
                         case 1:
-                            printf("Entered switch join\n");
                             room_id = get_room_id_by_name(res[1]);
                             clients[i].current_room_id = room_id;
                             write_prefix(clients[i]);
@@ -225,6 +228,15 @@ static void app(void) {
                             break;
                         case 4:
                             write_client(clients[i].sock, help_text);
+                            break;
+                        case 5:
+                            temp = auth_user(clients[i].name, res[1]);
+                            printf("Temp is %d\n", temp);
+                            if(temp == 0)
+                                write_client(clients[i].sock, "Authentified!");
+                            else
+                                write_client(clients[i].sock, "Not authentified!");
+
                             break;
                         case -2:
                             write_client(clients[i].sock,
