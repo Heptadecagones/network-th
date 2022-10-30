@@ -44,11 +44,11 @@ sqlite3_stmt *query_db(char *sql) {
 }
 
 // Register new user
-int register_user(char* uname, char *password) {
+int register_user(char *uname, char *password) {
     sqlite3_stmt *res;
     int rc;
-    char *sql =
-        "INSERT INTO Users (Username, Password) VALUES (:id, :pw) RETURNING UserID";
+    char *sql = "INSERT INTO Users (Username, Password) VALUES (:id, :pw) "
+                "RETURNING UserID";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
     check_error(rc);
@@ -68,11 +68,11 @@ int register_user(char* uname, char *password) {
 }
 
 // Check password input against stored password
-int auth_user(char* username, char *password) {
+int auth_user(char *username, char *password) {
     sqlite3_stmt *res;
     int rc;
     char *sql =
-        "SELECT Username FROM Users WHERE Username = :name AND Password = :pw;";
+        "SELECT UserID FROM Users WHERE Username = :name AND Password = :pw;";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
     check_error(rc);
@@ -82,18 +82,16 @@ int auth_user(char* username, char *password) {
     rc = sqlite3_bind_text(res, 2, password, -1, NULL);
     check_error(rc);
 
-    printf("SQL is %s\n", sqlite3_expanded_sql(res));
     // Get result and end transaction
     rc = sqlite3_step(res);
-    char* user_id = (char*)sqlite3_column_text(res, 0);
-    printf("User id was given: %s\n", user_id);
+    int user_id = sqlite3_column_int(res, 0);
     sqlite3_finalize(res);
 
-    return 0;
+    return user_id;
 }
 
 // Save a message in the database and return the save time
-char* save_message(char *msg, int sender_id, int dest_id) {
+char *save_message(char *msg, int sender_id, int dest_id) {
     // Pre-built statement
     sqlite3_stmt *res;
     // Result code
@@ -114,8 +112,8 @@ char* save_message(char *msg, int sender_id, int dest_id) {
     // Get result and end transaction
     rc = sqlite3_step(res);
     check_error(rc);
-    char* timestamp = (char*)malloc(sizeof(char)* 40);
-    strcpy(timestamp, (char*)sqlite3_column_text(res, 0));
+    char *timestamp = (char *)malloc(sizeof(char) * 40);
+    strcpy(timestamp, (char *)sqlite3_column_text(res, 0));
     sqlite3_finalize(res);
 
     // Return user_id if done, -1 otherwise (negative ID = guest)
@@ -147,7 +145,7 @@ int get_user_id(char *client_name) {
     return rc == SQLITE_DONE ? -1 : user_id;
 }
 
-char* get_room_name_by_id(int room_id) {
+char *get_room_name_by_id(int room_id) {
     // Pre-built statement
     sqlite3_stmt *res;
     // Result code
@@ -165,8 +163,8 @@ char* get_room_name_by_id(int room_id) {
     // Get result and end transaction
     rc = sqlite3_step(res);
     check_error(rc);
-    char* room_name = malloc(sizeof(const unsigned char*)*30);
-    strcpy(room_name, (char*)sqlite3_column_text(res, 0));
+    char *room_name = malloc(sizeof(const unsigned char *) * 30);
+    strcpy(room_name, (char *)sqlite3_column_text(res, 0));
     sqlite3_finalize(res);
 
     // Return user_id if done, -1 otherwise (negative ID = guest)
@@ -209,13 +207,15 @@ char **get_history_db(char *client_name, int *n_lines) {
     int rc;
 
     // Prepare parametrized query
-    char *sql = ""
-                "SELECT Messages.Timestamp, authors.Username, Messages.Contents "
-                "FROM Messages "
-                "INNER JOIN Users recipients ON Messages.Recipient = recipients.UserID "
-                "INNER JOIN Users authors ON Messages.Author = authors.UserID "
-                "WHERE recipients.Username = :name OR authors.Username = :name "
-                "ORDER BY Messages.Timestamp; ";
+    char *sql =
+        ""
+        "SELECT Messages.Timestamp, authors.Username, recipients.Username, "
+        "Messages.Contents "
+        "FROM Messages "
+        "INNER JOIN Users recipients ON Messages.Recipient = recipients.UserID "
+        "INNER JOIN Users authors ON Messages.Author = authors.UserID "
+        "WHERE recipients.Username = :name OR authors.Username = :name "
+        "ORDER BY Messages.Timestamp; ";
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
     check_error(rc);
 
@@ -232,9 +232,9 @@ char **get_history_db(char *client_name, int *n_lines) {
             // We need to print a message with max size BUF_SIZE + timestamp and
             // name, therefore 40 additional characters are reserved
             char message[BUF_SIZE + 40];
-            snprintf(message, BUF_SIZE + 40, "[%s (UTC)] %s: %s",
+            snprintf(message, BUF_SIZE + 40, "[%s (UTC)] %s->%s: %s",
                      sqlite3_column_text(res, 0), sqlite3_column_text(res, 1),
-                     sqlite3_column_text(res, 2));
+                     sqlite3_column_text(res, 2), sqlite3_column_text(res, 3));
             history[*n_lines] = (char *)malloc(sizeof(char) * (BUF_SIZE + 40));
             strcpy(history[*n_lines], message);
             *n_lines += 1;

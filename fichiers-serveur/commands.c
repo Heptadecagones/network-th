@@ -45,7 +45,7 @@ char **read_command(const char *command)
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         
-        printf("commande /register reçue avec comme paramètre : %s\r\n", res[1]);
+        printf("[CMD PARSER] /register %s\r\n", res[1]);
 
     }
     else if (!strncmp("/join", command, 5))       // Checks only the first 5 characters of command (so it doesn't take the argument)
@@ -57,14 +57,14 @@ char **read_command(const char *command)
         extraction_result = extract_arguments(res, arg_amount, command, delimiter, 0);
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
-        printf("commande /join reçue avec comme paramètre : %s\r\n", res[1]);
+        printf("[CMD PARSER] /join %s\r\n", res[1]);
     }
     else if(!strncmp("/leave", command, 6))
     {
         /* /leave */
         strcpy(res[0], "2");
 
-        printf("commande /leave reçue avec comme paramètre : %s\r\n", res[1]);
+        printf("[CMD PARSER] /leave");
     }
     else if(!strncmp("/whisper", command, 8) || !strncmp("/w", command, 2))
     {
@@ -76,7 +76,7 @@ char **read_command(const char *command)
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         // Commande de whisper
-        printf("commande /whisper reçue avec comme paramètre : %s et %s\r\n", res[1], res[2]);
+        printf("[CMD PARSER] /whisper %s %s\r\n", res[1], res[2]);
     }
     else if(!strncmp("/help", command, 5) || !strncmp("/h", command, 2))
     {
@@ -93,11 +93,11 @@ char **read_command(const char *command)
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         
-        printf("commande /login reçue avec comme paramètre : %s\r\n", res[1]);
+        printf("[CMD PARSER] /login : %s\r\n", res[1]);
 
     }
     else {
-        printf("Commande non reconnue\r\n");
+        printf("[CMD PARSER] Commande non reconnue\r\n");
         strcpy(res[0], "-1");
     }
     

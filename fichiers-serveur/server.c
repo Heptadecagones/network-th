@@ -14,6 +14,7 @@
 
 const char help_text[] = "List of commands :\n"
                          "\t/register [password]\n"
+                         "\t/login [password]\n"
                          "\t/join [channel]\n"
                          "\t/leave\n"
                          "\t/whisper [user] [message]\n"
@@ -61,7 +62,7 @@ static void end(void) {
 void write_prefix(Client c) {
     char *room_name = get_room_name_by_id(c.current_room_id);
     char room_prefix[35];
-    snprintf(room_prefix, 35, "╔[%s]═══", room_name);
+    snprintf(room_prefix, 35, "╔[%s]══════", room_name);
     write_client(c.sock, (char *)room_prefix);
 }
 
@@ -149,6 +150,10 @@ static void app(void) {
                 free(history[i]);
             }
             free(history);
+            char *welcome_message = c.name;
+            strcat(welcome_message, " connected.");
+            send_message_to_room(clients, clients[actual - 1], actual,
+                                 welcome_message, 1);
             write_prefix(c);
         } else {
             int i = 0;
@@ -174,23 +179,37 @@ static void app(void) {
                         // read_command renvoi un pointeur déjà alloué en
                         // mémoire
                         char **res = read_command(buffer);
+                        char second_buffer[BUF_SIZE];
                         int room_id;
                         int whisper_message_size;
-                        printf("res[0] is %d \n", atoi(res[0]));
                         switch (atoi(res[0])) {
                         case 0: // Register
                             if (clients[i].id == -1) {
                                 temp = register_user(clients[i].name, res[1]);
-                                if(temp != -1)
-                                    clients[i].id = temp;
-                                else
-                                    write_client(clients[i].sock, "Error: Username might be taken.");
+                                if (temp != -1) {
+                                    write_client(clients[i].sock,
+                                                 "Register successful, you may "
+                                                 "now log in.");
+                                } else
+                                    write_client(
+                                        clients[i].sock,
+                                        "Error: Username might be taken.");
                             } else
                                 write_client(clients[i].sock,
                                              "You are already logged in.");
                             break;
                         case 1:
                             room_id = get_room_id_by_name(res[1]);
+
+                            strncpy(buffer, client.name, BUF_SIZE - 1);
+                            strncat(buffer, " left the channel.",
+                                    BUF_SIZE - strlen(buffer) - 1);
+
+                            strncpy(second_buffer, client.name, BUF_SIZE - 1);
+                            strncat(second_buffer, " joined the channel.",
+                                    BUF_SIZE - strlen(second_buffer) - 1);
+                            send_message_to_room(clients, client, actual,
+                                                 second_buffer, 1);
                             clients[i].current_room_id = room_id;
                             write_prefix(clients[i]);
                             break;
@@ -223,7 +242,8 @@ static void app(void) {
                                 free(message);
                             } else {
                                 /* User not found */
-                                write_client(clients[i].sock, "User not found");
+                                write_client(clients[i].sock,
+                                             "User not found.");
                             }
                             break;
                         case 4:
@@ -232,10 +252,13 @@ static void app(void) {
                         case 5:
                             temp = auth_user(clients[i].name, res[1]);
                             printf("Temp is %d\n", temp);
-                            if(temp == 0)
+                            if (temp != 0) {
                                 write_client(clients[i].sock, "Authentified!");
-                            else
-                                write_client(clients[i].sock, "Not authentified!");
+                                clients[i].id = temp;
+                            } else
+                                write_client(
+                                    clients[i].sock,
+                                    "Invalid request, check your password.");
 
                             break;
                         case -2:
