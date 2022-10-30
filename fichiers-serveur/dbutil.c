@@ -105,8 +105,8 @@ char get_sqlite_minor_version() {
     check_error(rc);
     char *version = (char *)sqlite3_column_text(res, 0);
     sqlite3_finalize(res);
-
-    return version[2];
+    printf("%s\n", version);
+    return version[3];
 }
 // Save a message in the database and return the save time
 char *save_message(char *msg, int sender_id, int dest_id) {

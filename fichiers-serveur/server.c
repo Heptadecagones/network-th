@@ -235,10 +235,15 @@ static void app(void) {
                                        target_client->id);
                                 if (clients[i].id != -1 &&
                                     target_client->id != -1) {
-                                    printf("minor %d\n", get_sqlite_minor_version());
-                                    timestamp =
-                                        save_message(res[2], clients[i].id,
-                                                     target_client->id);
+                                    // Verify if SQlite version is good enough
+                                    if (get_sqlite_minor_version() >= 53) {
+                                        timestamp =
+                                            save_message(res[2], clients[i].id,
+                                                         target_client->id);
+                                    } else 
+                                    {
+                                        timestamp = "SQL version insufficient";
+                                    }
                                 }
                                 snprintf(message, BUF_SIZE + 40,
                                          "[%s (UTC)] %s: %s\n", timestamp,
