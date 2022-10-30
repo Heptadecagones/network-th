@@ -24,7 +24,7 @@ static sqlite3 *db = NULL;
 void check_error(int result_code) {
     if (result_code != SQLITE_OK) {
         printf("[DB CHK] %s\n", sqlite3_errmsg(db));
-        sqlite3_close(db);
+        // sqlite3_close(db);
     }
 }
 

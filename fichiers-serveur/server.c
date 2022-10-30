@@ -275,9 +275,6 @@ static void app(void) {
                         else printf("res[1] is %s\r\n", res[1]);
                         if(res[0] != NULL) free(res[0]);
                         else printf("res[0] is %s\r\n", res[0]);
-                        free(res[2]);
-                        free(res[1]);
-                        free(res[0]);
                         free(res);
                     } else {
                         send_message_to_room(clients, client, actual, buffer,
