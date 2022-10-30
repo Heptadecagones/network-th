@@ -152,6 +152,7 @@ static void app(void) {
                 free(history[i]);
             }
             free(history);
+            write_client(c.sock, "You still have to login.");
             char *welcome_message = c.name;
             strcat(welcome_message, " connected.");
             send_message_to_room(clients, clients[actual - 1], actual,

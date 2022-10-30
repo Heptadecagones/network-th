@@ -46,8 +46,7 @@ sqlite3_stmt *query_db(char *sql) {
 int register_user(char *uname, char *password) {
     sqlite3_stmt *res;
     int rc;
-    char *sql = "INSERT INTO Users (Username, Password) VALUES (:id, :pw) "
-                "RETURNING UserID";
+    char *sql = "INSERT INTO Users (Username, Password) VALUES (:id, :pw) ";
 
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
     check_error(rc);
@@ -59,7 +58,7 @@ int register_user(char *uname, char *password) {
 
     // Get result and end transaction
     rc = sqlite3_step(res);
-    int user_id = sqlite3_column_int(res, 0);
+    int user_id = get_user_id(uname);
     sqlite3_finalize(res);
 
     // Return user ID if done, -1 otherwise
