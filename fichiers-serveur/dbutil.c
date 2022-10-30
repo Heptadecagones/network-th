@@ -43,6 +43,30 @@ sqlite3_stmt *query_db(char *sql) {
     return result;
 }
 
+// Register new user
+int register_user(char* uname, char *password) {
+    sqlite3_stmt *res;
+    int rc;
+    char *sql =
+        "INSERT INTO Users (Username, Password) VALUES (:id, :pw) RETURNING UserID";
+
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc);
+
+    // Bind value to query
+    rc = sqlite3_bind_text(res, 1, uname, -1, NULL);
+    rc = sqlite3_bind_text(res, 2, password, -1, NULL);
+    check_error(rc);
+
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    int user_id = sqlite3_column_int(res, 0);
+    sqlite3_finalize(res);
+
+    // Return user ID if done, -1 otherwise
+    return rc == SQLITE_DONE ? -1 : user_id;
+}
+
 // Check password input against stored password
 int auth_user(int user_id, char *password) {
     sqlite3_stmt *res;
@@ -117,7 +141,7 @@ int get_user_id(char *client_name) {
     int user_id = sqlite3_column_int(res, 0);
     sqlite3_finalize(res);
 
-    // Return user_id if done, -1 otherwise (negative ID = guest)
+    // Return user_id if not done, -1 otherwise (negative ID = guest)
     return rc == SQLITE_DONE ? -1 : user_id;
 }
 
@@ -231,7 +255,7 @@ int reset_db() {
                 "DROP TABLE IF EXISTS Users;"
                 "CREATE TABLE Users("
                 "UserID INTEGER PRIMARY KEY AUTOINCREMENT,"
-                "Username TEXT,"
+                "Username TEXT type UNIQUE,"
                 "Password TEXT);"
                 // Messages table
                 "DROP TABLE IF EXISTS Messages;"

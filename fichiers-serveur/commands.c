@@ -37,15 +37,15 @@ char **read_command(const char *command)
     char *temp = strtok(commandCopy, delimiter);*/
     if(!strncmp("/register", command, 8) || !strncmp("/r", command, 2))
     {
-        /* /register [id] [password] */
-        arg_amount = 2;
+        /* /register [password] */
+        arg_amount = 1;
         strcpy(res[0], "0");
 
         extraction_result = extract_arguments(res, arg_amount, command, delimiter);
         /* Case where there are not enough arguments */
         if(extraction_result) strcpy(res[0], "-2");
         
-        printf("commande /register reçue avec comme paramètre : %s et %s\r\n", res[1], res[2]);
+        printf("commande /register reçue avec comme paramètre : %s\r\n", res[1]);
 
     }
     else if (!strncmp("/join", command, 5))       // Checks only the first 5 characters of command (so it doesn't take the argument)

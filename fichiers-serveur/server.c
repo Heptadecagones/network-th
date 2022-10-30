@@ -6,6 +6,7 @@
 #include "commands.h"
 #include "dbutil.h"
 #include "server.h"
+
 #include "client.h"
 
 // If 1, reset DB at startup
@@ -177,8 +178,12 @@ static void app(void) {
                         int whisper_message_size;
                         printf("res[0] is %d \n", atoi(res[0]));
                         switch (atoi(res[0])) {
-                        case 0:
-                            auth_user(atoi(res[1]), res[2]);
+                        case 0: // Register
+                            if(clients[i].id == -1)
+                                clients[i].id =
+                                    register_user(clients[i].name, res[1]);
+                            else
+                                    write_client(clients[i].sock, "You are already logged in.");
                             break;
                         case 1:
                             printf("Entered switch join\n");
