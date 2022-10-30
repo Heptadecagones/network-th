@@ -184,11 +184,12 @@ char **get_history_db(char *client_name, int *n_lines) {
 
     // Prepare parametrized query
     char *sql = ""
-                "SELECT Messages.Timestamp, Users.Username, Messages.Contents "
+                "SELECT Messages.Timestamp, authors.Username, Messages.Contents "
                 "FROM Messages "
-                "INNER JOIN Users ON Messages.Recipient = Users.UserID "
-                "WHERE Users.Username = :name "
-                "ORDER BY Messages.Timestamp;";
+                "INNER JOIN Users recipients ON Messages.Recipient = recipients.UserID "
+                "INNER JOIN Users authors ON Messages.Author = authors.UserID "
+                "WHERE recipients.Username = :name OR authors.Username = :name "
+                "ORDER BY Messages.Timestamp; ";
     rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
     check_error(rc);
 
@@ -205,7 +206,7 @@ char **get_history_db(char *client_name, int *n_lines) {
             // We need to print a message with max size BUF_SIZE + timestamp and
             // name, therefore 40 additional characters are reserved
             char message[BUF_SIZE + 40];
-            snprintf(message, BUF_SIZE + 40, "[%s (UTC)] %s: %s\n",
+            snprintf(message, BUF_SIZE + 40, "[%s (UTC)] %s: %s",
                      sqlite3_column_text(res, 0), sqlite3_column_text(res, 1),
                      sqlite3_column_text(res, 2));
             history[*n_lines] = (char *)malloc(sizeof(char) * (BUF_SIZE + 40));

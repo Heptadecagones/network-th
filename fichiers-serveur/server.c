@@ -11,6 +11,19 @@
 // If 1, reset DB at startup
 #define RESET_DB 1
 
+const char help_text[] = "List of commands :\n"
+                         "\t/register [id] [password]\n"
+                         "\t/join [channel]\n"
+                         "\t/leave\n"
+                         "\t/whisper [user] [message]\n"
+                         "\t/help\n"
+                         "List of aliases :\n"
+                         "\t/r for /register\n"
+                         "\t/w for /whisper\n"
+                         "\t/h for /help\n"
+                         "The /leave command lets you go "
+                         "back to the General channel\n";
+
 // Needed function pointers before init
 static void end(void);
 static void clear_clients(Client *clients, int actual);
@@ -47,7 +60,7 @@ static void end(void) {
 void write_prefix(Client c) {
     char *room_name = get_room_name_by_id(c.current_room_id);
     char room_prefix[35];
-    snprintf(room_prefix, 35, "╔[%s]═══\n", room_name);
+    snprintf(room_prefix, 35, "╔[%s]═══", room_name);
     write_client(c.sock, (char *)room_prefix);
 }
 
@@ -189,14 +202,13 @@ static void app(void) {
                                 message = (char *)malloc(sizeof(char) *
                                                          whisper_message_size);
 
-                                printf("Ids are %d and %d", clients[i].id, target_client->id);
+                                printf("Ids are %d and %d", clients[i].id,
+                                       target_client->id);
                                 timestamp = save_message(res[2], clients[i].id,
-                                             target_client->id);
+                                                         target_client->id);
                                 snprintf(message, BUF_SIZE + 40,
-                                         "[%s (UTC)] %s: %s\n",
-                                         timestamp,
-                                         clients[i].name,
-                                         res[2]);
+                                         "[%s (UTC)] %s: %s\n", timestamp,
+                                         clients[i].name, res[2]);
                                 write_client(target_client->sock, message);
                                 printf("Saving message...\n");
                                 printf("Message saved: %s!\n", message);
@@ -207,22 +219,7 @@ static void app(void) {
                             }
                             break;
                         case 4:
-                            message = (char *)malloc(sizeof(char) * BUF_SIZE);
-                            strcat(message, "List of commands :\n");
-                            strcat(message, "\t/register [id] [password]\n");
-                            strcat(message, "\t/join [channel]\n");
-                            strcat(message, "\t/leave\n");
-                            strcat(message, "\t/whisper [user] [message]\n");
-                            strcat(message, "\t/help\n");
-                            strcat(message, "List of aliases :\n");
-                            strcat(message, "\t/r for /register\n");
-                            strcat(message, "\t/w for /whisper\n");
-                            strcat(message, "\t/h for /help\n");
-                            strcat(message, "The /leave command lets you go "
-                                            "back to the General channel\n");
-
-                            write_client(clients[i].sock, message);
-                            free(message);
+                            write_client(clients[i].sock, help_text);
                             break;
                         case -2:
                             write_client(clients[i].sock,
@@ -275,7 +272,9 @@ static char *send_message_to_room(Client *clients, Client sender, int actual,
         /* we don't send message to the sender */
         if (sender.sock != clients[i].sock) {
             if (from_server == 0) {
-                strncpy(message, sender.name, BUF_SIZE - 1);
+                strncpy(message, "║ ", BUF_SIZE - 1);
+                strncat(message, sender.name,
+                        sizeof message - strlen(message) - 1);
                 strncat(message, ": ", sizeof message - strlen(message) - 1);
             } else
                 strncpy(message, "❭❭ ", BUF_SIZE - 1);
