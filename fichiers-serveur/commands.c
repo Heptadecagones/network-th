@@ -7,6 +7,11 @@
 
 #define BUF_SIZE 1024
 #define MAX_ARG 2
+
+/* @author: htricot
+ * Parseur de commandes
+ */
+
 // #define COMMAND_AMOUNT  4
 
 /* res[0] is the command to execute, res[1] is the first argument and res[2] is
@@ -84,6 +89,18 @@ char **read_command(const char *command) {
         /* /login [password] */
         arg_amount = 1;
         strcpy(res[0], "5");
+
+        extraction_result =
+            extract_arguments(res, arg_amount, command, delimiter, 0);
+        /* Case where there are not enough arguments */
+        if (extraction_result)
+            strcpy(res[0], "-2");
+
+        printf("[CMD PARSER] /login %s\r\n", res[1]);
+    } else if (!strncmp("/channels", command, 6) || !strncmp("/r", command, 2)) {
+        /* /login [password] */
+        arg_amount = 0;
+        strcpy(res[0], "6");
 
         extraction_result =
             extract_arguments(res, arg_amount, command, delimiter, 0);

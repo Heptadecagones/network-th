@@ -15,6 +15,7 @@
 const char help_text[] = "List of commands :\n"
                          "\t/register [password]\n"
                          "\t/login [password]\n"
+                         "\t/channels\n"
                          "\t/join [channel]\n"
                          "\t/leave\n"
                          "\t/whisper [user] [message]\n"
@@ -232,14 +233,17 @@ static void app(void) {
 
                                 printf("Ids are %d and %d\r\n", clients[i].id,
                                        target_client->id);
-                                timestamp = save_message(res[2], clients[i].id,
-                                                         target_client->id);
+                                if (clients[i].id != -1 &&
+                                    target_client->id != -1) {
+                                    printf("minor %d\n", get_sqlite_minor_version());
+                                    timestamp =
+                                        save_message(res[2], clients[i].id,
+                                                     target_client->id);
+                                }
                                 snprintf(message, BUF_SIZE + 40,
                                          "[%s (UTC)] %s: %s\n", timestamp,
                                          clients[i].name, res[2]);
                                 write_client(target_client->sock, message);
-                                printf("Saving message...\n");
-                                printf("Message saved: %s!\n", message);
                                 free(message);
                             } else {
                                 /* User not found */

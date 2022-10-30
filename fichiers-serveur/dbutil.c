@@ -5,9 +5,8 @@
 
 #include "dbutil.h"
 
-/* @omi
+/* @author:tfayard
  * Module d'interface SQLite
- * On va faire un truc style objets métier puisque ça a l'air de bien marcher
  */
 
 #ifndef BUF_SIZE
@@ -90,6 +89,25 @@ int auth_user(char *username, char *password) {
     return user_id;
 }
 
+char get_sqlite_minor_version() {
+    // Pre-built statement
+    sqlite3_stmt *res;
+    // Result code
+    int rc;
+
+    // Prepare parametrized query
+    char *sql = "select sqlite_version();";
+    rc = sqlite3_prepare_v2(db, sql, -1, &res, 0);
+    check_error(rc);
+
+    // Get result and end transaction
+    rc = sqlite3_step(res);
+    check_error(rc);
+    char *version = (char *)sqlite3_column_text(res, 0);
+    sqlite3_finalize(res);
+
+    return version[2];
+}
 // Save a message in the database and return the save time
 char *save_message(char *msg, int sender_id, int dest_id) {
     // Pre-built statement
