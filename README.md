@@ -11,6 +11,9 @@
 sa légèreté. Il aurait été souhaitable d'avoir la version chiffrée, SEE, mais
 elle est payante.
 
+Les données d'un utilisateur ne sont sauvegardées que s'il/elle est authentifié.e,
+cela dans un but de respect de l'anonymité. Il aurait été faisable d'enregistrer les messages
+envoyés en mode "guest" dans la base de données au moment de l'inscription, mais cela va à l'encontre de nos principes.
 
 ## Serveur
 
