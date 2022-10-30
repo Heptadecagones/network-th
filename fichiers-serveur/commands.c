@@ -135,7 +135,7 @@ int extract_arguments(char **arg_dest,int arg_amount, const char *command, const
                 do
                 {
                     strcat(arg_dest[i], temp);
-                    strcat(arg_dest[i], " \0");
+                    strcat(arg_dest[i], "\0");
                     temp = strtok(NULL, delimiter);
                 } while(temp != NULL);
                 /* This is considering only the last argument may be a phrase. */
