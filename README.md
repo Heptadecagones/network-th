@@ -1,6 +1,10 @@
 # Binôme
 Le binôme est composé de Thibaut FAYARD et d'Hugo TRICOT.
 
+# Dépendances
+
+libsqlite3-devel 3.35+ recommandée
+
 # Fonctionnalités implantées
 
 - Une base de données persistente permet la sauvegarde de messages envoyés
