@@ -64,6 +64,7 @@ void write_prefix(Client c) {
     char room_prefix[35];
     snprintf(room_prefix, 35, "╔[%s]══════", room_name);
     write_client(c.sock, (char *)room_prefix);
+    free(room_name);
 }
 
 Client *find_client_by_name(Client *clients, const char *name) {
@@ -198,7 +199,7 @@ static void app(void) {
                                 write_client(clients[i].sock,
                                              "You are already logged in.");
                             break;
-                        case 1:
+                        case 1: // Join a room
                             room_id = get_room_id_by_name(res[1]);
 
                             strncpy(buffer, client.name, BUF_SIZE - 1);
@@ -251,14 +252,16 @@ static void app(void) {
                             break;
                         case 5:
                             temp = auth_user(clients[i].name, res[1]);
-                            printf("Temp is %d\n", temp);
-                            if (temp != 0) {
+                            if (clients[i].id != -1) {
+                                write_client(clients[i].sock,
+                                             "You are already logged in.");
+                            } else if (temp != 0) {
                                 write_client(clients[i].sock, "Authentified!");
                                 clients[i].id = temp;
                             } else
-                                write_client(
-                                    clients[i].sock,
-                                    "Invalid request, check your password.");
+                                write_client(clients[i].sock,
+                                             "Invalid request, check your "
+                                             "password.");
 
                             break;
                         case -2:
@@ -269,12 +272,19 @@ static void app(void) {
                             write_client(clients[i].sock,
                                          "Unknown command\r\n");
                         }
-                        if(res[2] != NULL) free(res[2]);
-                        else printf("res[2] is %s\r\n", res[2]);
-                        if(res[1] != NULL) free(res[1]);
-                        else printf("res[1] is %s\r\n", res[1]);
-                        if(res[0] != NULL) free(res[0]);
-                        else printf("res[0] is %s\r\n", res[0]);
+                        if (res[2] != NULL)
+                            free(res[2]);
+                        else
+                            printf("res[2] is %s\r\n", res[2]);
+                        if (res[1] != NULL)
+                            free(res[1]);
+                        else
+                            printf("res[1] is %s\r\n", res[1]);
+                        if (res[0] != NULL)
+                            free(res[0]);
+                        else
+                            printf("res[0] is %s\r\n", res[0]);
+
                         free(res);
                     } else {
                         send_message_to_room(clients, client, actual, buffer,
@@ -305,11 +315,10 @@ static void remove_client(Client *clients, int to_remove, int *actual) {
     (*actual)--;
 }
 
-static char *send_message_to_room(Client *clients, Client sender, int actual,
-                                  const char *buffer, char from_server) {
+void send_message_to_room(Client *clients, Client sender, int actual,
+                          const char *buffer, char from_server) {
     int i = 0;
     char message[BUF_SIZE];
-    char *res;
     message[0] = 0;
     for (i = 0; i < actual; i++) {
         /* we don't send message to the sender */
@@ -330,9 +339,6 @@ static char *send_message_to_room(Client *clients, Client sender, int actual,
         }
     }
     strncat(message, CRLF, sizeof message - strlen(message) - 1);
-    res = (char *)malloc(sizeof(char) * strlen(message));
-    strncpy(res, message, strlen(message) - 1);
-    return res;
 }
 
 static int init_connection(void) {

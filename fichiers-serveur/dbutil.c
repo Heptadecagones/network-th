@@ -64,7 +64,7 @@ int register_user(char *uname, char *password) {
     sqlite3_finalize(res);
 
     // Return user ID if done, -1 otherwise
-    return rc == SQLITE_DONE ? -1 : user_id;
+    return rc == SQLITE_CONSTRAINT ? -1 : user_id;
 }
 
 // Check password input against stored password
