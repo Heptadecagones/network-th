@@ -1,7 +1,13 @@
+# Binôme
+Le binôme est composé de Thibaut FAYARD et d'Hugo TRICOT.
+
 # Fonctionnalités implantées
 
 - Une base de données persistente permet la sauvegarde de messages envoyés
 - L'historique de l'utilisateur.rice est restauré à chaque connexion
+- Différents canaux peuvent être accédés et quittés
+- Les utilisateurs peuvent s'inscrire et se connecter
+- Les utilisateurs peuvent s'envoyer des messages sur les canaux ou en privé
 
 # Choix d'implémentation
 
@@ -29,14 +35,6 @@ Des messages entre John et Duke permettent de montrer la fonction d'historique.
 
 Les fonctionnalités serveur sont regroupées dans la fonction `app()`. 
 
-## Chiffrement
-
-Le chiffrement de la transmission et des données sensibles de la base de données
-est effectué grâce à [`tiny-AES-c`](https://github.com/kokke/tiny-AES-c).
-
-L'algorithme AES a été choisi pour sa robustesse. tiny-AES-c a été choisi pour
-sa légèreté et par praticité (réutilisation d'un projet précédent).
-
 # Bugs connus
 
 Lors du test de l'historique avec valgrind, côté serveur, on a un bloc en
@@ -46,16 +44,8 @@ signal SIGKILL, la connexion ne se ferme pas à la sortie du serveur.
 
 Nous utilisons sqlite3 pour notre base de données.
 Cependant, la version 3.35.0 est nécessaire pour le bon fonctionnement de l'application.
-Si elle n'est pas disponible, la commande {/login password} ne fonctionnera
-que sur les utilisateurs initialisés avec la base de données. De plus, la commande
-{/whisper user message} causera une faute de segmentation et coupera l'application.
-
-# Todo
-
-- [X] BD persistente
-- [X] Gestion multi-client
-- [ ] Chiffrement de la connexion
-- [X] Groupes de discussion
+Si elle n'est pas disponible, la commande {/whisper user message} enverra le message
+mais la date d'envoi ne pourra pas être lu.
 
 # Utilisation
 Vérifiez que vous disposez de sqlite3. Sinon, installez la librairie.
